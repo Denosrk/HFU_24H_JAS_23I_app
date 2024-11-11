@@ -15,3 +15,27 @@ test('array test', () => {
 
     expect(a[0]).toBe(1);
   });
+
+  test('Null test', () => {
+    const a = null;
+
+    expect(a[null]).toBe(true);
+  });
+
+  test('vergleichsoperator test', () => {
+    const a = null;
+
+    expect(a[null]).toBe(true);
+  });
+
+  test('spread test', () => {
+    const a = null;
+
+    expect(a[null]).toBe(true);
+  });
+
+  test('destructing operator test', () => {
+    const a = null;
+
+    expect(a[null]).toBe(true);
+  });
