@@ -26,4 +26,12 @@ describe("library", () => {
         expect(addresses.length).toBe(3);
       });
   });
+  
+  test("call fetch gets addresses", () => {
+    return fetch("http://localhost:3000/addresses")
+      .then(data => data.json())
+      .then(addresses => {
+        expect(addresses.length).toBe(12);
+      });
+  });
 });

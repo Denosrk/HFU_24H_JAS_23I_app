@@ -1,22 +1,37 @@
 export class Person {
-  constructor(firstName, lastName) {
-    this.firstName = firstName ?? "John";
-    this.lastName = lastName ?? "Doe";
+  constructor(firstName, middleName, lastName, birthDate, schoolName) {
+    this.firstName = firstName;
+    this.middleName = middleName;
+    this.lastName = lastName;
+    this.birthDate = birthDate;
+    this.schoolName = schoolName;
   }
 
   fullName() {
-    return `${this.firstName} ${this.lastName}`;
+    return `${this.firstName} ${this.middleName || ""} ${this.lastName}`.trim();
   }
 
   age() {
-    return new Date().getFullYear() - 1992;
+    if(!this.birthDate)
+      return undefined;
+
+    const now = new Date();
+    const age = now.getFullYear() - this.birthDate.getFullYear();
+    const isBeforeBirthday = 
+    now.getMonth() < this.birthDate.getMonth() || (now.getMonth() === this.birthDate.getMonth() && now.getDate() < this.birthDate.getDate());
+
+    return isBeforeBirthday ? age - 1 : age;
+  }
+
+  toString() {
+    return this.fullName();
   }
 }
 
 export class Teacher extends Person {
-  constructor(firstName, lastName, schoolName) {
-    super(firstName, lastName);
-    this.schoolName = schoolName ?? "unknown";
+  constructor(firstName, middleName, lastName, birthDate, schoolName) {
+    super(firstName, middleName, lastName, birthDate);
+    this.schoolName = schoolName ?? "HFU";
   }
 
   fullName() {
@@ -74,7 +89,7 @@ export function getJsonWithNiceFormattingAndNoNumbers(obj) {
   return JSON.stringify(
     obj,
     (k, v) => {
-      return typeof v === 0 ? undefined : v;
+      return typeof v === "number" ? undefined : v;
     },
     2,
   );
@@ -87,7 +102,7 @@ export function getPropertyNames(obj) {
     }
   }
 
-  return getKeys();
+  return Object.keys(obj);
 }
 
 export function getPropertyValues(obj) {
@@ -97,7 +112,7 @@ export function getPropertyValues(obj) {
     }
   }
 
-  return [...getValues()];
+  return Object.values(obj);
 }
 
 export function divide(numerator, denominator) {
@@ -121,13 +136,13 @@ export function safeDivide(numerator, denominator) {
 }
 
 export function getObjectWithAOnly(obj) {
-  const { a, rest } = obj;
+  const { a } = obj;
 
-  return a;
+  return { a };
 }
 
 export function getObjectWithAllButA(obj) {
-  const { a, rest } = obj;
+  const { a, ...rest } = obj;
 
-  return { rest };
+  return rest;
 }
