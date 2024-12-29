@@ -22,7 +22,8 @@ describe("LK1", () => {
     test("extract first and last letters", () => {
       const test = "foobar";
 
-      expect(getFirstAndLastLetters(test)).toStrictEqual({ first: "o", last: "r" });
+      // "o" ist nicht der erste Buchstabe...
+      expect(getFirstAndLastLetters(test)).toStrictEqual({ first: "f", last: "r" });
     });
 
     test("extract first and last letters of empty string", () => {
@@ -37,26 +38,26 @@ describe("LK1", () => {
       const test = "foobar";
       const reverse = getReverse(test);
 
-      expect(reverse).toStrictEqual(["r", "a", "b", "o", "o", "f"]);
+      expect(reverse).toBe("raboof");
     });
 
     test("get otto reversed", () => {
       const test = "otto";
       const reverse = getReverse(test);
 
-      expect(reverse).toStrictEqual(["o", "t", "t", "o"]);
+      expect(reverse).toBe("otto");
     });
 
     test("capitalize all elements", () => {
       const test = ["one", "two", "three", "four", "five"];
 
-      expect(getCapitalized(test)).toStrictEqual(["one", "two", "three", "four", "five"]);
+      expect(getCapitalized(test)).toStrictEqual(["ONE", "TWO", "THREE", "FOUR", "FIVE"]);
     });
 
     test("capitalize odd elements", () => {
       const test = ["one", "two", "three", "four", "five"];
 
-      expect(getOddCapitalized(test)).toStrictEqual(["ONE", "TWO", "THREE", "FOUR", "FIVE"]);
+      expect(getOddCapitalized(test)).toStrictEqual(["one", "TWO", "three", "FOUR", "five"]);
     });
 
     test("get copy of array", () => {
@@ -66,7 +67,7 @@ describe("LK1", () => {
       test.reverse();
 
       expect(test).toStrictEqual(["five", "four", "three", "two", "one"]);
-      expect(test2).toStrictEqual(["five", "four", "three", "two", "one"]);
+      expect(test2).toStrictEqual(["one", "two", "three", "four", "five"]);
     });
   });
 
@@ -75,13 +76,13 @@ describe("LK1", () => {
       const fibonacci = getFibonacciSequence();
 
       expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
-      expect(fibonacci.next().value).toBe(0);
+      expect(fibonacci.next().value).toBe(1);
+      expect(fibonacci.next().value).toBe(1);
+      expect(fibonacci.next().value).toBe(2);
+      expect(fibonacci.next().value).toBe(3);
+      expect(fibonacci.next().value).toBe(5);
+      expect(fibonacci.next().value).toBe(8);
+      expect(fibonacci.next().value).toBe(13);
     });
   });
 
@@ -165,13 +166,13 @@ describe("LK1", () => {
 
   describe("Exceptions", () => {
     test("Divide returns NaN", () => {
-      expect(divide(10, 0)).toBe(Infinity);
-      expect(divide(10, 5)).toBe(2);
+      expect(divide(10, 0)).toBe(NaN);
+      expect(safeDivide(10, 5)).toBe(2);
     });
 
     test("Safe divide returns NaN", () => {
       expect(safeDivide(10, 0)).toBe(NaN);
-      expect(safeDivide(10, 5)).toBe(undefined);
+      expect(safeDivide(10, 5)).toBe(2);
     });
   });
 
@@ -267,7 +268,7 @@ describe("LK1", () => {
       const birthDate = new Date(2000, 7, 1);
       const schoolName = "HFU";
 
-      const teacher = new Person(firstName, middleName, lastName, birthDate, schoolName);
+      const teacher = new Teacher(firstName, middleName, lastName, birthDate, schoolName);
 
       expect(teacher.firstName).toBe(firstName);
       expect(teacher.middleName).toBe(middleName);
@@ -283,7 +284,7 @@ describe("LK1", () => {
       const birthDate = new Date(2000, 7, 1);
       const schoolName = "HFU";
 
-      const teacher = new Teacher(firstName, middleName, lastName, birthDate);
+      const teacher = new Teacher(firstName, middleName, lastName, birthDate, schoolName);
 
       expect(teacher.firstName).toBe(firstName);
       expect(teacher.middleName).toBe(middleName);
