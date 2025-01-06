@@ -15,7 +15,7 @@ describe("LK2", () => {
       </div>
     `;
 
-      const button = document;
+      const button = document.getElementById("a");
 
       expect(button.id).toBe("a");
       expect(button.tagName).toBe("BUTTON");
@@ -51,7 +51,7 @@ describe("LK2", () => {
       document.addEventListener("click", handleClick);
       try {
         div.addEventListener("click", handleClick);
-        button.addEventListener("click", handleAndPassClick);
+        button.addEventListener("click", handleClick);
 
         button.click();
 
@@ -74,10 +74,11 @@ describe("LK2", () => {
       let clicks = [];
 
       function handleClick(e) {
+        if (e.currentTarget === document)
         clicks.push(e.currentTarget.nodeName);
       }
 
-      document.addEventListener("click", handleClick, { capture: false });
+      document.addEventListener("click", handleClick, { capture: true });
       try {
         div.addEventListener("click", handleClick);
         button.addEventListener("click", handleClick);
@@ -89,7 +90,7 @@ describe("LK2", () => {
         // It doesn't matter if document event-listeners in other tests are still attached,
         // but this one captures all events and then stops propagation, which breaks the
         // expectation in the next text (for preventDefault())
-        document.removeEventListener("click", handleClick, { capture: false });
+        document.removeEventListener("click", handleClick, { capture: true });
       }
     });
   });
@@ -99,7 +100,7 @@ describe("LK2", () => {
       document.body.innerHTML = `
       <form id="vehicles">
         <input type="text">
-        <input id="firstName" type="text">
+        <input id="firstName" type="text" disabled>
         <select id="numCars">
           <option id="one">One</option>
           <option id="two">Two</option>
@@ -108,7 +109,8 @@ describe("LK2", () => {
       </form>
     `;
 
-      let firstNameInput = document.getElementsByTagName("form")[0].getElementsByTagName("input")[0];
+      //let firstNameInput = document.getElementsByTagName("form")[0].getElementsByTagName("input")[0];
+      let firstNameInput = document.getElementById("firstName");
 
       expect(firstNameInput.id).toBe("firstName");
       expect(firstNameInput.disabled).toBeTruthy();
@@ -143,50 +145,51 @@ describe("LK2", () => {
     function clearCookies() {
       const cookies = document.cookie.split(";");
       const expiryDate = new Date(0).toUTCString();
-
+  
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i];
         const [key] = cookie.trim().split("=");
         document.cookie = `${key}=; expires=${expiryDate}`;
       }
     }
-
+  
     function getCookieMap() {
-      const cookie = document.cookie.split(";").map(s => {
-        const [key, value] = s.trim().split("=");
-        return { key, value };
-      });
-      return cookie;
+      return document.cookie
+        .split(";")
+        .filter((s) => s.trim())
+        .map((s) => {
+          const [key, value] = s.trim().split("=");
+          return { key, value };
+        });
     }
-
+  
     function getCookieObject() {
       const cookie = {};
-
-      for (const pair of document.cookie.split(";")) {
+      for (const pair of document.cookie.split(";").filter((s) => s.trim())) {
         const [key, value] = pair.trim().split("=");
         cookie[key] = value;
       }
       return cookie;
     }
-
+  
     beforeEach(() => {
       clearCookies();
     });
-
+  
     test("get key/value pairs", () => {
-      document.cookie = "something=John";
-      document.cookie = "expertMode=1";
-
+      document.cookie = "lastUsername=John";
+      document.cookie = "expertMode=true";
+  
       expect(getCookieMap()).toMatchSnapshot();
     });
-
+  
     test("get values in object", () => {
-      document.cookie = "something=Mark";
-      document.cookie = "expertMode=John";
-
+      document.cookie = "lastUsername=John";
+      document.cookie = "expertMode=true";
+  
       expect(getCookieObject()).toMatchSnapshot();
     });
-
+  
     test("store and load JSON", () => {
       const person = {
         first: "Bob",
@@ -196,13 +199,13 @@ describe("LK2", () => {
           name: "Apple",
         },
       };
-
-      document.cookie = "???";
-
+  
+      document.cookie = `person=${encodeURIComponent(JSON.stringify(person))}`;
+  
       expect(document.cookie).toMatchSnapshot();
-
+  
       const loadedPerson = JSON.parse(getCookieObject()["person"]);
-
+  
       expect(loadedPerson.first).toBe("Bob");
       expect(loadedPerson.last).toBe("Hoffman");
       expect(loadedPerson.age).toBe(34);
@@ -214,7 +217,7 @@ describe("LK2", () => {
     beforeEach(() => {
       localStorage.clear();
     });
-
+  
     test("get key/value pairs", () => {
       function* getLocalStorageItems() {
         for (let i = 0; i < localStorage.length; i++) {
@@ -222,31 +225,34 @@ describe("LK2", () => {
           yield { key, value: localStorage.getItem(key) };
         }
       }
-
-      localStorage.setItem("lastUsername", "Bob");
-
+  
+      localStorage.setItem("lastUsername", "John");
+      localStorage.setItem("expertMode", "true");
+  
       const local = [...getLocalStorageItems()];
-
+  
       expect(local).toMatchSnapshot();
     });
-
+  
     test("get values in object", () => {
       function getLocalStorageAsObject() {
         const local = {};
-
+  
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           local[key] = localStorage.getItem(key);
         }
-
+  
         return local;
       }
-
-      // Hint: Does this test even set anything in the localStorage yet?
-
+  
+      localStorage.setItem("lastUsername", "John");
+      localStorage.setItem("expertMode", "true");
+  
       expect(getLocalStorageAsObject()).toMatchSnapshot();
     });
   });
+  
 
   describe("Timers and intervals", () => {
     test("set interval of 1/10 second", done => {
@@ -256,6 +262,7 @@ describe("LK2", () => {
         counter += 1;
 
         if (counter > 3) {
+          clearInterval(t);
           // what do you do to stop the interval?
         }
       }, 100);
