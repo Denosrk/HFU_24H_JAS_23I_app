@@ -22,7 +22,9 @@ describe("LK2", () => {
       expect(button.className).toBe("primary hl");
       expect([...button.classList]).toEqual(["primary", "hl"]);
       expect(button.innerHTML).toBe(`<span class="strong">Test</span>`);
-      expect(button.outerHTML).toBe(`<button id="a" class="primary hl"><span class="strong">Test</span></button>`);
+      expect(button.outerHTML).toBe(
+        `<button id="a" class="primary hl"><span class="strong">Test</span></button>`
+      );
     });
   });
 
@@ -74,8 +76,8 @@ describe("LK2", () => {
       let clicks = [];
 
       function handleClick(e) {
-        if (e.currentTarget === document)
         clicks.push(e.currentTarget.nodeName);
+        e.stopPropagation();
       }
 
       document.addEventListener("click", handleClick, { capture: true });
@@ -145,14 +147,14 @@ describe("LK2", () => {
     function clearCookies() {
       const cookies = document.cookie.split(";");
       const expiryDate = new Date(0).toUTCString();
-  
+
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i];
         const [key] = cookie.trim().split("=");
         document.cookie = `${key}=; expires=${expiryDate}`;
       }
     }
-  
+
     function getCookieMap() {
       return document.cookie
         .split(";")
@@ -162,7 +164,7 @@ describe("LK2", () => {
           return { key, value };
         });
     }
-  
+
     function getCookieObject() {
       const cookie = {};
       for (const pair of document.cookie.split(";").filter((s) => s.trim())) {
@@ -171,25 +173,25 @@ describe("LK2", () => {
       }
       return cookie;
     }
-  
+
     beforeEach(() => {
       clearCookies();
     });
-  
+
     test("get key/value pairs", () => {
       document.cookie = "lastUsername=John";
       document.cookie = "expertMode=true";
-  
+
       expect(getCookieMap()).toMatchSnapshot();
     });
-  
+
     test("get values in object", () => {
       document.cookie = "lastUsername=John";
       document.cookie = "expertMode=true";
-  
+
       expect(getCookieObject()).toMatchSnapshot();
     });
-  
+
     test("store and load JSON", () => {
       const person = {
         first: "Bob",
@@ -199,13 +201,13 @@ describe("LK2", () => {
           name: "Apple",
         },
       };
-  
-      document.cookie = `person=${encodeURIComponent(JSON.stringify(person))}`;
-  
+
+      document.cookie = `person=${JSON.stringify(person)}`;
+
       expect(document.cookie).toMatchSnapshot();
-  
+
       const loadedPerson = JSON.parse(getCookieObject()["person"]);
-  
+
       expect(loadedPerson.first).toBe("Bob");
       expect(loadedPerson.last).toBe("Hoffman");
       expect(loadedPerson.age).toBe(34);
@@ -217,7 +219,7 @@ describe("LK2", () => {
     beforeEach(() => {
       localStorage.clear();
     });
-  
+
     test("get key/value pairs", () => {
       function* getLocalStorageItems() {
         for (let i = 0; i < localStorage.length; i++) {
@@ -225,37 +227,36 @@ describe("LK2", () => {
           yield { key, value: localStorage.getItem(key) };
         }
       }
-  
+
       localStorage.setItem("lastUsername", "John");
       localStorage.setItem("expertMode", "true");
-  
+
       const local = [...getLocalStorageItems()];
-  
+
       expect(local).toMatchSnapshot();
     });
-  
+
     test("get values in object", () => {
       function getLocalStorageAsObject() {
         const local = {};
-  
+
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           local[key] = localStorage.getItem(key);
         }
-  
+
         return local;
       }
-  
+
       localStorage.setItem("lastUsername", "John");
       localStorage.setItem("expertMode", "true");
-  
+
       expect(getLocalStorageAsObject()).toMatchSnapshot();
     });
   });
-  
 
   describe("Timers and intervals", () => {
-    test("set interval of 1/10 second", done => {
+    test("set interval of 1/10 second", (done) => {
       let counter = 0;
 
       const t = setInterval(() => {
