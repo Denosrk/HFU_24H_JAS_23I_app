@@ -1,0 +1,23 @@
+{
+  "addresses": [
+    {
+      "id": "64c2",
+      "firstName": "John",
+      "lastName": "Doe",
+      "birthdate": "1990-01-01",
+      "isActive": true
+    },
+    {
+      "id": "a7e1",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "birthdate": "1985-06-15",
+      "isActive": false
+    },
+    {
+      "id": "0a4d",
+      "firstName": "Alice",
+      "lastName": "Wonderland"
+    }
+  ]
+}

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLZ Address Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #0073e6;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    main {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #0073e6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background-color: #005bb5;
+    }
+
+    .list {
+      margin-top: 20px;
+    }
+
+    .list-item {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .test-buttons {
+      margin-top: 20px;
+    }
+
+    .test-buttons button {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>MLZ Address Management</h1>
+  </header>
+  <main>
+    <section class="section">
+      <h2>Adressliste</h2>
+      <div id="addresses" class="list"></div>
+      <div class="test-buttons">
+        <button id="createTestData">Testdaten erstellen</button>
+        <button id="deleteAllData">Alle Daten löschen</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Adressen suchen</h2>
+      <input type="text" id="searchField" placeholder="Nach Name suchen...">
+      <div id="searchResults" class="list"></div>
+    </section>
+
+    <section class="section">
+      <h2>Neue Adresse hinzufügen</h2>
+      <form id="newAddressForm">
+        <div class="form-group">
+          <label for="firstName">Vorname</label>
+          <input type="text" id="firstName" required>
+        </div>
+        <div class="form-group">
+          <label for="lastName">Nachname</label>
+          <input type="text" id="lastName" required>
+        </div>
+        <div class="form-group">
+          <label for="birthdate">Geburtsdatum</label>
+          <input type="date" id="birthdate" required>
+        </div>
+        <div class="form-group">
+          <label for="isActive">Aktiv</label>
+          <input type="checkbox" id="isActive">
+        </div>
+        <button type="submit">Adresse hinzufügen</button>
+      </form>
+    </section>
+
+    <section class="section">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Benutzername</label>
+          <input type="text" id="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Passwort</label>
+          <input type="password" id="password" required>
+        </div>
+        <button type="submit">Anmelden</button>
+        <p id="loginMessage"></p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module">
+    // CRUD-Funktionen aus der Datenbibliothek importieren
+    import { fetchAddresses, addAddress, updateAddress, deleteAddress } from "./lib/data.js";
+
+    // Alle Adressen abrufen und in der Liste anzeigen
+    async function getAndShowAddresses() {
+      try {
+        const addresses = await fetchAddresses(); // Daten vom Server abrufen
+        const addressList = document.getElementById("addresses");
+        addressList.innerHTML = ""; // Liste leeren
+
+        addresses.forEach((address) => {
+          const div = document.createElement("div");
+          div.classList.add("list-item");
+          div.innerHTML = `
+            <b>${address.firstName} ${address.lastName}</b> (Geboren: ${address.birthdate}) - Aktiv: ${address.isActive}
+            <button class="delete-btn" data-id="${address.id}">Löschen</button>
+            <button class="edit-btn" data-id="${address.id}">Bearbeiten</button>
+          `;
+          addressList.appendChild(div);
+        });
+
+        // Event-Listener für die Löschen- und Bearbeiten-Buttons hinzufügen
+        document.querySelectorAll(".delete-btn").forEach((btn) =>
+          btn.addEventListener("click", () => deleteAddressFromGUI(btn.dataset.id))
+        );
+
+        document.querySelectorAll(".edit-btn").forEach((btn) =>
+          btn.addEventListener("click", () => editAddress(btn.dataset.id))
+        );
+      } catch (error) {
+        console.error("Fehler beim Abrufen der Adressen:", error);
+      }
+    }
+
+    // Eine Adresse löschen und die Liste aktualisieren
+    async function deleteAddressFromGUI(id) {
+      if (confirm("Möchten Sie diese Adresse wirklich löschen?")) {
+        try {
+          await deleteAddress(id); // Adresse löschen
+          alert("Adresse erfolgreich gelöscht!");
+          await getAndShowAddresses(); // Liste aktualisieren
+        } catch (error) {
+          console.error("Fehler beim Löschen der Adresse:", error);
+          alert("Löschen der Adresse fehlgeschlagen.");
+        }
+      }
+    }
+
+    // Adresse bearbeiten: Benutzer nach neuen Details fragen und speichern
+    function editAddress(id) {
+      const firstName = prompt("Geben Sie einen neuen Vornamen ein:");
+      const lastName = prompt("Geben Sie einen neuen Nachnamen ein:");
+      const birthdate = prompt("Geben Sie ein neues Geburtsdatum ein (YYYY-MM-DD):");
+      const isActive = confirm("Ist der Benutzer aktiv? OK = Ja, Abbrechen = Nein");
+
+      const updatedAddress = {
+        firstName,
+        lastName,
+        birthdate,
+        isActive,
+      };
+
+      saveUpdatedAddress(id, updatedAddress);
+    }
+
+    // Aktualisierte Adressdetails auf dem Server speichern
+    async function saveUpdatedAddress(id, updatedAddress) {
+      try {
+        await updateAddress(id, updatedAddress); // Adresse auf dem Server aktualisieren
+        alert("Adresse erfolgreich aktualisiert!");
+        await getAndShowAddresses(); // Liste aktualisieren
+      } catch (error) {
+        console.error("Fehler beim Aktualisieren der Adresse:", error);
+        alert("Aktualisierung der Adresse fehlgeschlagen.");
+      }
+    }
+
+    // Neue Adresse hinzufügen
+    document.getElementById("newAddressForm").addEventListener("submit", async (e) => {
+      e.preventDefault(); // Formularabsendung verhindern
+      const newAddress = {
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        birthdate: document.getElementById("birthdate").value,
+        isActive: document.getElementById("isActive").checked,
+      };
+
+      try {
+        await addAddress(newAddress); // Adresse zum Server hinzufügen
+        alert("Neue Adresse erfolgreich hinzugefügt!");
+        e.target.reset(); // Formular zurücksetzen
+        await getAndShowAddresses(); // Liste aktualisieren
+      } catch (error) {
+        console.error("Fehler beim Hinzufügen der Adresse:", error);
+      }
+    });
+
+    // Testdaten für Demonstrationszwecke erstellen
+    document.getElementById("createTestData").addEventListener("click", async () => {
+      try {
+        const testAddresses = [
+          { firstName: "John", lastName: "Doe", birthdate: "1990-01-01", isActive: true },
+          { firstName: "Jane", lastName: "Smith", birthdate: "1985-06-15", isActive: false },
+        ];
+        for (const address of testAddresses) {
+          await addAddress(address); // Testadresse hinzufügen
+        }
+        alert("Testdaten erfolgreich erstellt!");
+        await getAndShowAddresses(); // Liste aktualisieren
+      } catch (error) {
+        console.error("Fehler beim Erstellen der Testdaten:", error);
+      }
+    });
+
+    // Alle Adressen vom Server löschen
+    document.getElementById("deleteAllData").addEventListener("click", async () => {
+      try {
+        const addresses = await fetchAddresses(); // Alle Adressen abrufen
+        for (const address of addresses) {
+          await deleteAddress(address.id); // Jede Adresse löschen
+        }
+        alert("Alle Adressen erfolgreich gelöscht!");
+        await getAndShowAddresses(); // Liste aktualisieren
+      } catch (error) {
+        console.error("Fehler beim Löschen aller Daten:", error);
+      }
+    });
+
+    // Nach Adressen suchen
+    document.getElementById("searchField").addEventListener("input", async (e) => {
+      const query = e.target.value.toLowerCase(); // Suchtext in Kleinbuchstaben umwandeln
+      try {
+        const addresses = await fetchAddresses(); // Alle Adressen abrufen
+        const filtered = addresses.filter(
+          (a) =>
+            a.firstName.toLowerCase().includes(query) ||
+            a.lastName.toLowerCase().includes(query)
+        );
+        const searchResults = document.getElementById("searchResults");
+        searchResults.innerHTML = ""; // Vorherige Ergebnisse löschen
+        filtered.forEach((a) => {
+          const div = document.createElement("div");
+          div.classList.add("list-item");
+          div.textContent = `${a.firstName} ${a.lastName}`; // Gefilterte Adressen anzeigen
+          searchResults.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Fehler bei der Adresssuche:", error);
+      }
+    });
+
+    // Anwendung initialisieren und Adressliste laden
+    document.addEventListener("DOMContentLoaded", () => {
+      getAndShowAddresses();
+    });
+  </script>
+</body>
+
+</html>
